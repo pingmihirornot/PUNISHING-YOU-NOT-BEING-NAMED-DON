@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Name Checker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111;
+      --border: #2a2a2a;
+      --accent: #e8ff00;
+      --text: #f0f0f0;
+      --muted: #555;
+      --win: #e8ff00;
+      --lose: #ff4040;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(232,255,0,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(232,255,0,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      position: relative;
+    }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 10vw, 6rem);
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      text-shadow: 0 0 40px rgba(232,255,0,0.3);
+      text-align: center;
+      line-height: 1;
+    }
+
+    .subtitle {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .box {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 3rem 3rem 2.5rem;
+      position: relative;
+    }
+
+    /* corner accents */
+    .box::before, .box::after {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      border-color: var(--accent);
+      border-style: solid;
+    }
+    .box::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+    .box::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+    label {
+      display: block;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid var(--border);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(1.8rem, 6vw, 3rem);
+      padding: 0.5rem 0 1rem;
+      outline: none;
+      letter-spacing: 0.05em;
+      transition: border-color 0.2s;
+      caret-color: var(--accent);
+    }
+
+    input[type="text"]:focus {
+      border-bottom-color: var(--accent);
+    }
+
+    input[type="text"]::placeholder {
+      color: #2a2a2a;
+    }
+
+    button {
+      margin-top: 2.5rem;
+      width: 100%;
+      background: var(--accent);
+      color: #000;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.15em;
+      border: none;
+      padding: 1rem 2rem;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    button:hover  { opacity: 0.85; }
+    button:active { transform: scale(0.98); }
+
+    /* output */
+    .output {
+      width: 100%;
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .output.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .output-inner {
+      width: 100%;
+      border: 1px solid var(--border);
+      padding: 2rem 2.5rem;
+      position: relative;
+    }
+
+    .output-inner::before {
+      content: '// OUTPUT';
+      position: absolute;
+      top: -0.6rem;
+      left: 1.5rem;
+      background: var(--bg);
+      padding: 0 0.5rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+    }
+
+    .output-text {
+      font-size: clamp(1rem, 3.5vw, 1.4rem);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      line-height: 1.4;
+    }
+
+    .output-text.win  { color: var(--win);  text-shadow: 0 0 20px rgba(232,255,0,0.4); }
+    .output-text.lose { color: var(--lose); text-shadow: 0 0 20px rgba(255,64,64,0.4); }
+
+    .footer {
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div>
+    <h1>WHO ARE YOU?</h1>
+    <p class="subtitle">name_checker.py &mdash; interactive</p>
+  </div>
+
+  <div class="box">
+    <label for="nameInput">Enter your name:</label>
+    <input type="text" id="nameInput" placeholder="type here..." autocomplete="off" autofocus />
+    <button onclick="checkName()">RUN SCRIPT</button>
+  </div>
+
+  <div class="output" id="output">
+    <div class="output-inner">
+      <p class="output-text" id="outputText"></p>
+    </div>
+  </div>
+
+  <p class="footer">press enter or click run &mdash; python logic ported to js</p>
+</div>
+
+<script>
+  document.getElementById('nameInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') checkName();
+  });
+
+  function checkName() {
+    const name = document.getElementById('nameInput').value.trim();
+    if (!name) return;
+
+    const outputDiv  = document.getElementById('output');
+    const outputText = document.getElementById('outputText');
+
+    // reset animation
+    outputDiv.classList.remove('show');
+
+    setTimeout(() => {
+      if (name === "DON" || name === "don") {
+        outputText.textContent = "YOU ARE THE SHIT";
+        outputText.className = "output-text win";
+      } else {
+        outputText.textContent = "I am sorry for your sorry ass";
+        outputText.className = "output-text lose";
+      }
+      outputDiv.classList.add('show');
+    }, 50);
+  }
+</script>
+
+</body>
+</html>
